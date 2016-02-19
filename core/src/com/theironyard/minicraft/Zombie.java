@@ -1,22 +1,20 @@
 package com.theironyard.minicraft;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-public class Minicraft extends ApplicationAdapter {
-    final int WIDTH = 40;
-    final int HEIGHT = 40;
-    static final float MAX_VELOCITY = 175;
+import java.util.Random;
+import java.util.stream.IntStream;
 
-    Zombie zombie = new Zombie();
 
-    SpriteBatch batch;
+/**
+ * Created by PiratePowWow on 2/19/16.
+ */
+public class Zombie {
     TextureRegion down, up, right, left, direction, upReversed, downReversed;
     Animation walkingUp, walkingDown;
 
@@ -26,18 +24,15 @@ public class Minicraft extends ApplicationAdapter {
     float xv, yv;
     float time;
     boolean canMove = true;
+    Random randomDir = new Random();
+    int dir;
 
-    @Override
     public void create () {
-        batch = new SpriteBatch();
-
-        zombie.create();
-
         Texture tiles = new Texture("tiles.png");
         TextureRegion[][] grid = TextureRegion.split(tiles, 16, 16);
-        down = grid[6][0];
-        up = grid[6][1];
-        right = grid[6][3];
+        down = grid[6][4];
+        up = grid[6][5];
+        right = grid[6][7];
         left = new TextureRegion(right);
         left.flip(true, false);
         upReversed = new TextureRegion(up);
@@ -48,62 +43,31 @@ public class Minicraft extends ApplicationAdapter {
         downReversed.flip(true, false);
         walkingDown = new Animation(0.1f, down, downReversed);
     }
-
-    @Override
-    public void render () {
-        time += Gdx.graphics.getDeltaTime();
-
-        move();
-        zombie.move();
-
-        //Sets walking animation
-        if (yv>0) {
-            direction = walkingUp.getKeyFrame(time, true);
-        }
-        else if (yv < 0) {
-            direction = walkingDown.getKeyFrame(time,true);
-        }
-        if (zombie.yv>0) {
-            zombie.direction = zombie.walkingUp.getKeyFrame(time, true);
-        }
-        else if (zombie.yv < 0) {
-            zombie.direction = zombie.walkingDown.getKeyFrame(time,true);
-        }
-        //End walking animation
-
-        Gdx.gl.glClearColor(0, 0.5f, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        batch.begin();
-        batch.draw(direction, x, y, WIDTH, HEIGHT);
-        batch.draw(zombie.direction, zombie.x, zombie.y, WIDTH, HEIGHT);
-        batch.end();
-    }
-
     void move(){
         //Else if statements allow character to only move in one direction at a time
         if (canMove) {
-            if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+            dir = randomDir.nextInt(4);
+            if ( dir == 0) {
                 position = y;
-                yv = MAX_VELOCITY;
+                yv = Minicraft.MAX_VELOCITY;
                 direction = up;
                 canMove = !canMove;
             }
-            else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            else if (dir == 1) {
                 position = y;
-                yv = -1*MAX_VELOCITY;
+                yv = -1*Minicraft.MAX_VELOCITY;
                 direction = down;
                 canMove = !canMove;
             }
-            else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            else if (dir == 2) {
                 position = x;
-                xv = -1*MAX_VELOCITY;
+                xv = -1*Minicraft.MAX_VELOCITY;
                 direction = left;
                 canMove = !canMove;
             }
-            else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            else if (dir == 3) {
                 position = x;
-                xv = MAX_VELOCITY;
+                xv = Minicraft.MAX_VELOCITY;
                 direction = right;
                 canMove = !canMove;
             }
