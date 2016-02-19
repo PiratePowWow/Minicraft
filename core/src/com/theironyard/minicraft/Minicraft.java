@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
@@ -14,7 +15,8 @@ public class Minicraft extends ApplicationAdapter {
     static final float MAX_VELOCITY = 175;
 
     SpriteBatch batch;
-    TextureRegion down, up, right, left, direction;
+    TextureRegion down, up, right, left, direction, upReversed, downReversed;
+    Animation walkingUp, walkingDown;
 
     float position;
     float x = 0;
@@ -22,7 +24,6 @@ public class Minicraft extends ApplicationAdapter {
     float xv, yv;
     float time;
     float timeLastMoved = 0;
-    boolean walkingUpOrDown = true;
     boolean canMove = true;
 
     @Override
@@ -36,7 +37,13 @@ public class Minicraft extends ApplicationAdapter {
         right = grid[6][3];
         left = new TextureRegion(right);
         left.flip(true, false);
+        upReversed = new TextureRegion(up);
+        upReversed.flip(true, false);
         direction = down;
+        walkingUp = new Animation(0.1f, up, upReversed );
+        downReversed = new TextureRegion(down);
+        downReversed.flip(true, false);
+        walkingDown = new Animation(0.1f, down, downReversed);
     }
 
     @Override
@@ -44,6 +51,15 @@ public class Minicraft extends ApplicationAdapter {
         time += Gdx.graphics.getDeltaTime();
 
         move();
+
+        //Sets walking animation
+        if (yv>0) {
+            direction = walkingUp.getKeyFrame(time, true);
+        }
+        else if (yv < 0) {
+            direction = walkingDown.getKeyFrame(time,true);
+        }
+        //End walking animation
 
         Gdx.gl.glClearColor(0, 0.5f, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -54,13 +70,12 @@ public class Minicraft extends ApplicationAdapter {
     }
 
     void move(){
-
+        //Else if statements allow character to only move in one direction at a time
         if (canMove) {
             if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
                 position = y;
                 timeLastMoved = time;
                 yv = MAX_VELOCITY;
-                walkingUpOrDown = true;
                 direction = up;
                 canMove = !canMove;
             }
@@ -68,7 +83,6 @@ public class Minicraft extends ApplicationAdapter {
                 position = y;
                 timeLastMoved = time;
                 yv = -1*MAX_VELOCITY;
-                walkingUpOrDown = true;
                 direction = down;
                 canMove = !canMove;
             }
@@ -76,7 +90,6 @@ public class Minicraft extends ApplicationAdapter {
                 position = x;
                 xv = -1*MAX_VELOCITY;
                 timeLastMoved = time;
-                walkingUpOrDown = false;
                 direction = left;
                 canMove = !canMove;
             }
@@ -84,17 +97,11 @@ public class Minicraft extends ApplicationAdapter {
                 position = x;
                 timeLastMoved = time;
                 xv = MAX_VELOCITY;
-                walkingUpOrDown = false;
                 direction = right;
                 canMove = !canMove;
             }
-
         }
-//        if ((walkingUpOrDown) && (time - timeLastMoved > 0.03) && (!canMove)){
-//            up.flip(true, false);
-//            down.flip(true, false);
-//
-//        }
+        // This section teleports the player to the opposite side
         if (x < 0){
             x = 600;
         }
@@ -107,7 +114,7 @@ public class Minicraft extends ApplicationAdapter {
         if (y > 440){
             y = 0;
         }
-
+        //This section stops the player movement if the player has moved 40 pixels, resets canMove back to true
         if (((Math.abs(xv) > 0) && (Math.abs(position - x) >= 40)) || ((Math.abs(yv) > 0) && (Math.abs(position - y) >= 40))){
             if (xv > 0){
                 x = position + 40;
@@ -118,15 +125,12 @@ public class Minicraft extends ApplicationAdapter {
             }else if (yv < 0){
                 y = position - 40;
             }
-
             yv = 0;
             xv = 0;
             canMove = true;
         }
-
-
+        //This is the movement of the character
         x += xv*Gdx.graphics.getDeltaTime();
         y += yv*Gdx.graphics.getDeltaTime();
-
     }
 }
