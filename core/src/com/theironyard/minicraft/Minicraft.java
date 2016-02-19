@@ -11,14 +11,19 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 public class Minicraft extends ApplicationAdapter {
     final int WIDTH = 40;
     final int HEIGHT = 40;
+    static final float MAX_VELOCITY = 175;
 
     SpriteBatch batch;
     TextureRegion down, up, right, left, direction;
 
+    float position;
     float x = 0;
     float y = 0;
+    float xv, yv;
     float time;
     float timeLastMoved = 0;
+    boolean walkingUpOrDown = true;
+    boolean canMove = true;
 
     @Override
     public void create () {
@@ -50,33 +55,78 @@ public class Minicraft extends ApplicationAdapter {
 
     void move(){
 
-        if (time - timeLastMoved > 0.15f) {
+        if (canMove) {
             if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-                y += 40;
+                position = y;
                 timeLastMoved = time;
+                yv = MAX_VELOCITY;
+                walkingUpOrDown = true;
                 direction = up;
+                canMove = !canMove;
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-                y -= 40;
+            else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+                position = y;
                 timeLastMoved = time;
+                yv = -1*MAX_VELOCITY;
+                walkingUpOrDown = true;
                 direction = down;
+                canMove = !canMove;
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-                x -= 40;
+            else if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+                position = x;
+                xv = -1*MAX_VELOCITY;
                 timeLastMoved = time;
+                walkingUpOrDown = false;
                 direction = left;
+                canMove = !canMove;
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-                x += 40;
+            else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+                position = x;
                 timeLastMoved = time;
+                xv = MAX_VELOCITY;
+                walkingUpOrDown = false;
                 direction = right;
+                canMove = !canMove;
             }
+
         }
-//        y += yv*Gdx.graphics.getDeltaTime();
-//        x += xv*Gdx.graphics.getDeltaTime();
+//        if ((walkingUpOrDown) && (time - timeLastMoved > 0.03) && (!canMove)){
+//            up.flip(true, false);
+//            down.flip(true, false);
 //
-//        yv = decelerate(yv);
-//        xv = decelerate(xv);
+//        }
+        if (x < 0){
+            x = 600;
+        }
+        if (x > 600){
+            x = 0;
+        }
+        if (y < 0) {
+            y = 440;
+        }
+        if (y > 440){
+            y = 0;
+        }
+
+        if (((Math.abs(xv) > 0) && (Math.abs(position - x) >= 40)) || ((Math.abs(yv) > 0) && (Math.abs(position - y) >= 40))){
+            if (xv > 0){
+                x = position + 40;
+            }else if (xv < 0){
+                x = position - 40;
+            }else if (yv > 0){
+                y = position + 40;
+            }else if (yv < 0){
+                y = position - 40;
+            }
+
+            yv = 0;
+            xv = 0;
+            canMove = true;
+        }
+
+
+        x += xv*Gdx.graphics.getDeltaTime();
+        y += yv*Gdx.graphics.getDeltaTime();
 
     }
 }
